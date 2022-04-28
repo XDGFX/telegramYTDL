@@ -100,4 +100,7 @@ msg_handler = MessageHandler(Filters.all, msg)
 dispatcher.add_handler(msg_handler)
 
 updater.start_polling()
+
+print("Bot started")
+
 updater.idle()
