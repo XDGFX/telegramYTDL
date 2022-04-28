@@ -5,6 +5,7 @@ import time
 import youtube_dl
 from dotenv import load_dotenv
 from telegram import Update
+from telegram.error import TimedOut
 from telegram.ext import CallbackContext, MessageHandler, Updater
 from telegram.ext.filters import Filters
 
@@ -60,11 +61,14 @@ def msg(update: Update, context: CallbackContext):
                 self.previous_update_message = progress_report
 
                 # Update the progress message
-                context.bot.edit_message_text(
-                    chat_id=update.effective_chat.id,
-                    message_id=self.message_id,
-                    text=progress_report,
-                )
+                try:
+                    context.bot.edit_message_text(
+                        chat_id=update.effective_chat.id,
+                        message_id=self.message_id,
+                        text=progress_report,
+                    )
+                except TimedOut:
+                    pass
 
     dp = DownloadProgress()
 
