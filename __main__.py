@@ -50,6 +50,7 @@ def msg(update: Update, context: CallbackContext):
             if (
                 self.last_update_time is not None
                 and time.time() - self.last_update_time < 1
+                and data["status"] == "downloading"
             ):
                 return
 
@@ -103,13 +104,16 @@ def msg(update: Update, context: CallbackContext):
         )
         return
 
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([update.message.text])
+    try:
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([update.message.text])
 
-    # Delete the message received
-    context.bot.delete_message(
-        chat_id=update.effective_chat.id, message_id=update.message.message_id
-    )
+        # Delete the message received
+        context.bot.delete_message(
+            chat_id=update.effective_chat.id, message_id=update.message.message_id
+        )
+    except Exception as e:
+        context.bot.send_message(chat_id=update.effective_chat.id, text=str(e))
 
 
 msg_handler = MessageHandler(Filters.all, msg)
