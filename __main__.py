@@ -47,28 +47,34 @@ def msg(update: Update, context: CallbackContext):
 
             # Only update the message if it's been more than a second since
             # the last update
-            if self.last_update_time is None or time.time() - self.last_update_time > 1:
+            if (
+                self.last_update_time is not None
+                and time.time() - self.last_update_time < 1
+            ):
+                return
 
-                # Format the progress report
-                progress_report = format_progress(data)
+            self.last_update_time = time.time()
 
-                # If the previous update message is the same as the current one,
-                # don't send another one
-                if self.previous_update_message == progress_report:
-                    return
+            # Format the progress report
+            progress_report = format_progress(data)
 
-                # Update the previous update message
-                self.previous_update_message = progress_report
+            # If the previous update message is the same as the current one,
+            # don't send another one
+            if self.previous_update_message == progress_report:
+                return
 
-                # Update the progress message
-                try:
-                    context.bot.edit_message_text(
-                        chat_id=update.effective_chat.id,
-                        message_id=self.message_id,
-                        text=progress_report,
-                    )
-                except TimedOut:
-                    pass
+            # Update the previous update message
+            self.previous_update_message = progress_report
+
+            # Update the progress message
+            try:
+                context.bot.edit_message_text(
+                    chat_id=update.effective_chat.id,
+                    message_id=self.message_id,
+                    text=progress_report,
+                )
+            except TimedOut:
+                pass
 
     dp = DownloadProgress()
 
