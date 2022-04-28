@@ -1,5 +1,6 @@
 import os
 import re
+import time
 
 import youtube_dl
 from dotenv import load_dotenv
@@ -35,30 +36,35 @@ def msg(update: Update, context: CallbackContext):
             # Send a progress message to the user, this will be updated with
             # each progress update
             self.message_id = context.bot.send_message(
-                chat_id=update.effective_chat.id, text="Downloading..."
+                chat_id=update.effective_chat.id, text="Downloading...", timeout=10
             ).message_id
 
             self.previous_update_message = None
+            self.last_update_time = None
 
         def update(self, data):
 
-            # Format the progress report
-            progress_report = format_progress(data)
+            # Only update the message if it's been more than a second since
+            # the last update
+            if self.last_update_time is None or time.time() - self.last_update_time > 1:
 
-            # If the previous update message is the same as the current one,
-            # don't send another one
-            if self.previous_update_message == progress_report:
-                return
+                # Format the progress report
+                progress_report = format_progress(data)
 
-            # Update the previous update message
-            self.previous_update_message = progress_report
+                # If the previous update message is the same as the current one,
+                # don't send another one
+                if self.previous_update_message == progress_report:
+                    return
 
-            # Update the progress message
-            context.bot.edit_message_text(
-                chat_id=update.effective_chat.id,
-                message_id=self.message_id,
-                text=progress_report,
-            )
+                # Update the previous update message
+                self.previous_update_message = progress_report
+
+                # Update the progress message
+                context.bot.edit_message_text(
+                    chat_id=update.effective_chat.id,
+                    message_id=self.message_id,
+                    text=progress_report,
+                )
 
     dp = DownloadProgress()
 
